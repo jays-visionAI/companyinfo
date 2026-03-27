@@ -1,0 +1,545 @@
+{
+  "profile": {
+    "id": "4ee84459-1d9f-4715-a99b-50b5fb5ae8a6",
+    "name": "기업정보",
+    "description": "",
+    "project_type": "saas_admin",
+    "industry": "community",
+    "skill_level": "beginner",
+    "created_at": "2026-03-24T01:21:09.135Z",
+    "updated_at": "2026-03-24T01:21:09.135Z"
+  },
+  "goals": [
+    {
+      "id": "8f46ce13-58f7-4b4a-824c-9c30b98b4752",
+      "name": "비상장주식 정보 웹사이트 개발",
+      "title": "비상장주식 정보 웹사이트 개발",
+      "description": "비상장주식 정보를 제공하는 포괄적인 웹사이트 개발",
+      "status": "planned",
+      "source": "blueprint_push"
+    }
+  ],
+  "roles": [
+    {
+      "id": "8c447e2f-509c-41c3-b343-c42cdd8f123c",
+      "name": "일반유저",
+      "title": "일반유저",
+      "description": "일반 사용자 역할",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "75d845d4-7298-48d4-a048-8fda012bcc50",
+      "name": "회사담당자",
+      "title": "회사담당자",
+      "description": "회사를 대표하여 정보를 관리하는 역할",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "1a4d7b36-790a-4a58-bbcb-f21595310fe5",
+      "name": "관리자",
+      "title": "관리자",
+      "description": "시스템 전체를 관리하는 관리자 역할",
+      "status": "planned",
+      "source": "blueprint_push"
+    }
+  ],
+  "features": [
+    {
+      "id": "150e781f-186a-439f-b334-1e64f8bc15cd",
+      "name": "회사 정보 관리 시스템",
+      "title": "회사 정보 관리 시스템",
+      "description": "업종 카테고리별 분류, 회사 리스트뷰, 상세 정보 페이지 제공",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "b038873c-dd40-4a26-82a5-14667a5c4d7b",
+      "name": "커뮤니티 & Q&A 플랫폼",
+      "title": "커뮤니티 & Q&A 플랫폼",
+      "description": "유저 간 질의응답 시스템, 회사별 토론 채널, 회사 담당자 계정 시스템",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "b4e961a7-c67d-4cf0-9b60-e40056fddd73",
+      "name": "관리자 대시보드",
+      "title": "관리자 대시보드",
+      "description": "유저 관리, 회사 정보 관리, 문서 게시판 관리, 공지사항 관리, 환경 설정",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "10ca2bd4-1a8f-4ac7-be13-902edaea4635",
+      "name": "디자인 시스템",
+      "title": "디자인 시스템",
+      "description": "Tailwind CSS와 shadcn/ui를 활용한 전문적인 디자인 시스템 구축",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "4f5a0d52-a0f6-4d0d-b434-99a7fdc99e7b",
+      "name": "반응형 디자인",
+      "title": "반응형 디자인",
+      "description": "모바일, 태블릿, 데스크톱을 지원하는 반응형 웹사이트",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "fbaa1d8f-e6f9-4c7d-9984-ab401a13f254",
+      "name": "다크 모드",
+      "title": "다크 모드",
+      "description": "다크 모드 지원 기능",
+      "status": "planned",
+      "source": "blueprint_push"
+    }
+  ],
+  "screens": [
+    {
+      "id": "47410684-52b1-418c-8378-a8dd42b2f9ae",
+      "name": "회사 리스트뷰",
+      "title": "회사 리스트뷰",
+      "description": "최대 20개/페이지로 표시되는 회사 목록 화면",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "b6e044ea-06bf-4f4a-b7cb-81703ecbbd38",
+      "name": "회사 상세 정보 페이지",
+      "title": "회사 상세 정보 페이지",
+      "description": "마켓포지셔닝, 경쟁사 분석, 재무자료 등 상세 정보 제공",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "1203f498-2681-4036-bc3d-1b22c7612841",
+      "name": "관리자 대시보드",
+      "title": "관리자 대시보드",
+      "description": "SaaS 관리자를 위한 통합 관리 화면",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "77d5aead-2410-4c3b-92fa-2a02ce18f050",
+      "name": "메인 페이지",
+      "title": "메인 페이지",
+      "description": "히어로 섹션, 카테고리별 회사 탐색, 인기 회사 캐러셀, 통계 데이터, 검색 바 포함",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "37650f63-af70-4f3c-b68e-1c7d56ea195e",
+      "name": "회사 상세 페이지",
+      "title": "회사 상세 페이지",
+      "description": "탭 인터페이스, 차트 시각화, 반응형 테이블, 문서 미리보기 기능",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "a9832df1-af3c-4328-b215-1e8f65aa8ce8",
+      "name": "Q&A 인터페이스",
+      "title": "Q&A 인터페이스",
+      "description": "커뮤니티 기능을 위한 Q&A 인터페이스",
+      "status": "planned",
+      "source": "blueprint_push"
+    }
+  ],
+  "flows": [],
+  "components": [],
+  "data_entities": [
+    {
+      "id": "eb43b73d-1caf-4374-aa3a-506a6729e4a4",
+      "name": "User",
+      "title": "User",
+      "description": "유저 정보 엔티티 (일반, 회사담당자, 관리자 포함)",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "062b7c19-cdac-4fc7-b1ee-439fa1d03870",
+      "name": "Company",
+      "title": "Company",
+      "description": "회사 정보 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "6a3a18c3-3f20-4779-ad0d-414492c29066",
+      "name": "Industry",
+      "title": "Industry",
+      "description": "업종 카테고리 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "70e42ee5-7baf-4d54-9c89-0f8c47ddcd76",
+      "name": "FinancialData",
+      "title": "FinancialData",
+      "description": "재무 데이터 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "92263dce-2251-4f6e-8e65-c4eeac4cb17d",
+      "name": "CompanyDocument",
+      "title": "CompanyDocument",
+      "description": "회사 공개 자료 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "75e997cb-6ae4-40bf-aa0b-332fcba23f90",
+      "name": "CommunityPost",
+      "title": "CommunityPost",
+      "description": "커뮤니티 게시물 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "e1dc9585-f23e-48c2-8030-5e58577ec5b4",
+      "name": "Question",
+      "title": "Question",
+      "description": "질문 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "2e2a9fad-0782-4393-8672-e567bf75df1c",
+      "name": "Answer",
+      "title": "Answer",
+      "description": "답변 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "92c4e3c9-e5be-4bb9-a87f-39cb9c56c6b6",
+      "name": "Notice",
+      "title": "Notice",
+      "description": "공지사항 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "3b6de719-0811-4595-990b-541ff7597dcf",
+      "name": "Document",
+      "title": "Document",
+      "description": "문서 게시판 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "40c9be81-a06c-421e-809a-44599df5a446",
+      "name": "회사 정보",
+      "title": "회사 정보",
+      "description": "비상장주식 회사 정보 데이터 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "69ac7713-0f70-48d4-8d66-6b137c3dddf7",
+      "name": "재무 데이터",
+      "title": "재무 데이터",
+      "description": "회사 재무 정보 데이터 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "83de6b3d-91df-4927-8310-119a8fa0a07f",
+      "name": "문서 데이터",
+      "title": "문서 데이터",
+      "description": "회사 관련 문서 데이터 엔티티",
+      "status": "planned",
+      "source": "blueprint_push"
+    }
+  ],
+  "apis": [],
+  "integrations": [
+    {
+      "id": "80bd369a-c185-478d-a7f2-0d3d17065fd7",
+      "name": "JWT 인증",
+      "title": "JWT 인증",
+      "description": "JWT를 이용한 인증 시스템",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "50068c3f-ec26-4203-96a7-979e380116a3",
+      "name": "Recharts",
+      "title": "Recharts",
+      "description": "재무 데이터 시각화를 위한 차트 라이브러리",
+      "status": "planned",
+      "source": "blueprint_push"
+    }
+  ],
+  "workstreams": [],
+  "milestones": [],
+  "open_questions": [],
+  "conflicts": [],
+  "design_tokens": [],
+  "deployment_targets": [],
+  "discovery_state": "completed",
+  "discovery_completion_score": 100,
+  "active_blueprint_view": "screen",
+  "version": 1,
+  "last_saved_at": "2026-03-26T13:31:07.779Z",
+  "directory": "/Users/sangjaeseo/BlueforgeProjects/기업정보",
+  "constraints": [
+    {
+      "id": "b8334b83-5e69-4bff-8be6-91ccc66c9ed6",
+      "name": "프로젝트 타입",
+      "title": "프로젝트 타입",
+      "description": "project.json에 saas_admin으로 설정되어 관리자 기능에 초점",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "75b74e9f-9444-4435-be18-ea4bda7321d3",
+      "name": "페이지네이션",
+      "title": "페이지네이션",
+      "description": "회사 리스트뷰는 최대 20개/페이지로 제한",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "d2ee27d1-44b7-4008-b473-278800ec295c",
+      "name": "컬러 테마",
+      "title": "컬러 테마",
+      "description": "파란색 계열(#2563eb, #3b82f6)의 프로페셔널한 컬러 테마",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "de96db08-f9f7-4aa7-b50a-e87a63eabde9",
+      "name": "UI 디자인",
+      "title": "UI 디자인",
+      "description": "모던한 카드 디자인, 그림자, 둥근 모서리, 호버 효과 적용",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "9a9c55b1-ea05-4328-8804-129de55ec841",
+      "name": "테이블 디자인",
+      "title": "테이블 디자인",
+      "description": "스트라이프 행, 정렬 아이콘을 포함한 데이터 테이블 디자인",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "5647cddd-f776-408c-b00a-3e4cebe4fc11",
+      "name": "레이아웃",
+      "title": "레이아웃",
+      "description": "사이드바 + 콘텐츠 영역의 대시보드 레이아웃",
+      "status": "planned",
+      "source": "blueprint_push"
+    },
+    {
+      "id": "750cd284-6352-4679-b219-8a3b356833b2",
+      "name": "반응성",
+      "title": "반응성",
+      "description": "flex/grid를 활용한 유연한 반응형 그리드 레이아웃",
+      "status": "planned",
+      "source": "blueprint_push"
+    }
+  ],
+  "scope_changes": [
+    {
+      "id": "615ee027-2e74-4946-baf2-6ceb5c9e8124",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "feature",
+      "entity_id": "150e781f-186a-439f-b334-1e64f8bc15cd",
+      "entity_title": "회사 정보 관리 시스템",
+      "description": "Added feature: 회사 정보 관리 시스템",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "38b241ec-28e2-47fa-8f55-57961d710d44",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "feature",
+      "entity_id": "b038873c-dd40-4a26-82a5-14667a5c4d7b",
+      "entity_title": "커뮤니티 & Q&A 플랫폼",
+      "description": "Added feature: 커뮤니티 & Q&A 플랫폼",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "5ae7f458-0eb2-483e-8f96-e7c09a7f1dd6",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "feature",
+      "entity_id": "b4e961a7-c67d-4cf0-9b60-e40056fddd73",
+      "entity_title": "관리자 대시보드",
+      "description": "Added feature: 관리자 대시보드",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "39b6f06a-bab3-4891-a042-c19ee76fe1d8",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "screen",
+      "entity_id": "47410684-52b1-418c-8378-a8dd42b2f9ae",
+      "entity_title": "회사 리스트뷰",
+      "description": "Added screen: 회사 리스트뷰",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "ba71cfb0-96cc-4db5-a442-bc28aa631ee7",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "screen",
+      "entity_id": "b6e044ea-06bf-4f4a-b7cb-81703ecbbd38",
+      "entity_title": "회사 상세 정보 페이지",
+      "description": "Added screen: 회사 상세 정보 페이지",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "d40d0791-9e0a-40e9-8644-b21001424778",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "screen",
+      "entity_id": "1203f498-2681-4036-bc3d-1b22c7612841",
+      "entity_title": "관리자 대시보드",
+      "description": "Added screen: 관리자 대시보드",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "de210cc4-7d23-4dc1-945d-1d5a48abbc7d",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "eb43b73d-1caf-4374-aa3a-506a6729e4a4",
+      "entity_title": "User",
+      "description": "Added data_entitie: User",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "0773741c-e879-4884-ad62-94fff77c0639",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "062b7c19-cdac-4fc7-b1ee-439fa1d03870",
+      "entity_title": "Company",
+      "description": "Added data_entitie: Company",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "45648bed-4bee-4696-b064-403bb44f386d",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "6a3a18c3-3f20-4779-ad0d-414492c29066",
+      "entity_title": "Industry",
+      "description": "Added data_entitie: Industry",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "2eeec8d5-4989-48da-bb4e-670e24345047",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "70e42ee5-7baf-4d54-9c89-0f8c47ddcd76",
+      "entity_title": "FinancialData",
+      "description": "Added data_entitie: FinancialData",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "634d970b-0f25-4ece-8a0a-118ac2785e34",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "92263dce-2251-4f6e-8e65-c4eeac4cb17d",
+      "entity_title": "CompanyDocument",
+      "description": "Added data_entitie: CompanyDocument",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "b6b03022-d90a-46c3-87ab-5e3af7863dac",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "75e997cb-6ae4-40bf-aa0b-332fcba23f90",
+      "entity_title": "CommunityPost",
+      "description": "Added data_entitie: CommunityPost",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "197c3314-c682-4068-a20d-05111e83c0d8",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "e1dc9585-f23e-48c2-8030-5e58577ec5b4",
+      "entity_title": "Question",
+      "description": "Added data_entitie: Question",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "2ea698dd-14cd-4b55-8b1d-7d80625f11d9",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "2e2a9fad-0782-4393-8672-e567bf75df1c",
+      "entity_title": "Answer",
+      "description": "Added data_entitie: Answer",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "30b39a12-09fc-4d08-bb91-76a4361b30c6",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "92c4e3c9-e5be-4bb9-a87f-39cb9c56c6b6",
+      "entity_title": "Notice",
+      "description": "Added data_entitie: Notice",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "36e081cd-3f54-4988-8ab3-6ecebe0b97f5",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "data_entitie",
+      "entity_id": "3b6de719-0811-4595-990b-541ff7597dcf",
+      "entity_title": "Document",
+      "description": "Added data_entitie: Document",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "c3b59cc3-6d5c-4cac-8bd5-7a34f20f0a99",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "integration",
+      "entity_id": "80bd369a-c185-478d-a7f2-0d3d17065fd7",
+      "entity_title": "JWT 인증",
+      "description": "Added integration: JWT 인증",
+      "initiated_by": "user",
+      "impact": "medium"
+    },
+    {
+      "id": "0eea84bd-12b5-4b0e-968a-de8ef456064e",
+      "timestamp": "2026-03-24T02:05:52.308Z",
+      "change_type": "added",
+      "entity_type": "integration",
+      "entity_id": "50068c3f-ec26-4203-96a7-979e380116a3",
+      "entity_title": "Recharts",
+      "description": "Added integration: Recharts",
+      "initiated_by": "user",
+      "impact": "medium"
+    }
+  ]
+}
