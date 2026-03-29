@@ -17,7 +17,7 @@ import {
   Activity,
   CheckCircle,
   XCircle,
-  MoreVertical
+  MoreVertical,
 } from 'lucide-react'
 import {
   LineChart,
@@ -30,36 +30,37 @@ import {
   ResponsiveContainer
 } from 'recharts'
 import { formatDate, cn } from '../lib/utils'
+import { DashboardStat, AdminActivityLog, RecentUser, TrafficData } from '../types'
 
 const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('')
 
   // 샘플 데이터 - 실제로는 API에서 가져와야 함
-  const dashboardStats = [
+  const dashboardStats: DashboardStat[] = [
     {
       title: '전체 유저',
-      value: '1,245',
+      value: 1245,
       change: '+12%',
       icon: Users,
       color: 'bg-blue-500'
     },
     {
       title: '등록된 회사',
-      value: '89',
+      value: 89,
       change: '+5%',
       icon: Building2,
       color: 'bg-green-500'
     },
     {
       title: '업로드 문서',
-      value: '156',
+      value: 156,
       change: '+23%',
       icon: FileText,
       color: 'bg-purple-500'
     },
     {
       title: '활동 알림',
-      value: '42',
+      value: 42,
       change: '-8%',
       icon: Bell,
       color: 'bg-orange-500'
@@ -67,7 +68,7 @@ const AdminDashboard = () => {
   ]
 
   // 활동 로그 데이터
-  const activityLogs = [
+  const activityLogs: AdminActivityLog[] = [
     {
       id: 1,
       user: '김관리자',
@@ -111,7 +112,7 @@ const AdminDashboard = () => {
   ]
 
   // 최근 가입 유저
-  const recentUsers = [
+  const recentUsers: RecentUser[] = [
     {
       id: 1,
       name: '홍길동',
@@ -155,7 +156,7 @@ const AdminDashboard = () => {
   ]
 
   // 웹사이트 트래픽 데이터
-  const trafficData = [
+  const trafficData: TrafficData[] = [
     { date: '1월 10일', visitors: 2345, pageviews: 5678 },
     { date: '1월 11일', visitors: 2567, pageviews: 6123 },
     { date: '1월 12일', visitors: 2789, pageviews: 6543 },

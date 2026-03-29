@@ -1,5 +1,5 @@
 // 유저 역할 타입
-export type UserRole = 'user' | 'company_rep' | 'admin'
+export type UserRole = 'user' | 'company_admin' | 'admin'
 
 // 유저 인터페이스
 export interface User {
@@ -48,8 +48,12 @@ export interface Company {
   website?: string
   market_position?: string
   marketPosition?: string // 호환성을 위한 별칭
+  competitor_analysis?: string
+  competitorAnalysis?: string // 호환성을 위한 별칭
   is_verified: boolean
   is_active: boolean
+  is_listed?: boolean
+  isListed?: boolean // 호환성을 위한 별칭
   created_at: string
   createdAt?: Date // 호환성을 위한 별칭
   updated_at: string
@@ -121,6 +125,8 @@ export interface CommunityPost {
   content: string
   author_id: string
   authorId?: string // 호환성을 위한 별칭
+  author_name?: string // 편의를 위해 추가
+  author_avatar?: string // 편의를 위해 추가
   company_id?: string
   companyId?: string // 호환성을 위한 별칭
   post_type: 'question' | 'discussion' | 'announcement'
@@ -133,12 +139,14 @@ export interface CommunityPost {
   viewCount?: number // 호환성을 위한 별칭
   like_count: number
   likeCount?: number // 호환성을 위한 별칭
+  likes?: number // dataStore 호환성을 위해 추가
   created_at: string
   createdAt?: Date // 호환성을 위한 별칭
   updated_at: string
   updatedAt?: Date // 호환성을 위한 별칭
   profiles?: Profile // 조인된 데이터
   companies?: Company // 조인된 데이터
+  comments: Comment[] // 편의를 위해 추가
 }
 
 // 댓글
@@ -148,6 +156,8 @@ export interface Comment {
   postId?: string // 호환성을 위한 별칭
   author_id: string
   authorId?: string // 호환성을 위한 별칭
+  author_name?: string // 편의를 위해 추가
+  author_avatar?: string // 편의를 위해 추가
   content: string
   is_official_answer: boolean
   isOfficial?: boolean // 호환성을 위한 별칭
@@ -228,7 +238,7 @@ export interface CompanyFilter {
 }
 
 // 정렬 옵션
-export type CompanySortBy = 'name' | 'revenue' | 'employeeCount' | 'foundedYear' | 'createdAt'
+export type CompanySortBy = 'name' | 'revenue' | 'employee_count' | 'founded_year' | 'foundedYear' | 'employeeCount' | 'created_at'
 export type SortOrder = 'asc' | 'desc'
 
 // 페이지네이션
@@ -239,10 +249,56 @@ export interface Pagination {
   totalPages: number
 }
 
+// 커뮤니티 게시물 필터
+export interface CommunityPostFilter {
+  postType?: 'question' | 'discussion' | 'announcement' | 'all'
+  companyId?: string
+  isResolved?: boolean
+  searchTerm?: string
+}
+
+// 커뮤니티 게시물 정렬 옵션
+export type CommunityPostSortBy = 'created_at' | 'view_count' | 'like_count' | 'comments'
+
 // API 응답
 export interface ApiResponse<T> {
   success: boolean
   data?: T
   error?: string
   pagination?: Pagination
+}
+
+// Admin Dashboard
+export interface DashboardStat {
+  title: string;
+  value: number;
+  change: string;
+  icon: React.ElementType;
+  color: string;
+}
+
+export interface AdminActivityLog {
+  id: number;
+  user: string;
+  action: string;
+  target: string;
+  time: string;
+  status: 'success' | 'failure' | 'pending';
+}
+
+export type RecentUserStatus = 'active' | 'pending' | 'suspended';
+
+export interface RecentUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  joinDate: string;
+  status: RecentUserStatus;
+}
+
+export interface TrafficData {
+  date: string;
+  visitors: number;
+  pageviews: number;
 }

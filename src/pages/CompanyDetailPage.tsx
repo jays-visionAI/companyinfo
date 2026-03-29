@@ -45,7 +45,7 @@ const CompanyDetailPage = () => {
   // 업종 정보 찾기
   const industry = company ? industries.find(ind => ind.id === company.industryId) : null
 
-  if (!company || !industry) {
+  if (!company) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
@@ -61,6 +61,9 @@ const CompanyDetailPage = () => {
       </div>
     )
   }
+
+  // company가 존재하므로 industry를 다시 찾음
+  const companyIndustry = industry
 
   // 샘플 재무 데이터 (실제로는 API에서 가져와야 함)
   const financialData = [
@@ -116,10 +119,10 @@ const CompanyDetailPage = () => {
                 </h1>
                 <div className="flex items-center gap-2 mt-1">
                   <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-sm font-medium">
-                    {industry.name}
+                    {companyIndustry?.name || '정보 없음'}
                   </span>
-                  <span className={cn("px-3 py-1 rounded-full text-sm font-medium", getInvestmentStageColor(company.investmentStage))}>
-                    {company.investmentStage}
+                  <span className={cn("px-3 py-1 rounded-full text-sm font-medium", getInvestmentStageColor(company.investmentStage || ''))}>
+                    {company.investmentStage || '정보 없음'}
                   </span>
                 </div>
               </div>
@@ -158,7 +161,7 @@ const CompanyDetailPage = () => {
                   <Target className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">업종</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{industry.name}</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{companyIndustry?.name || '정보 없음'}</p>
                   </div>
                 </div>
 
@@ -166,7 +169,7 @@ const CompanyDetailPage = () => {
                   <Calendar className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">설립년도</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{company.foundedYear}년</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{(company.foundedYear || company.founded_year)}년</p>
                   </div>
                 </div>
 
@@ -174,7 +177,7 @@ const CompanyDetailPage = () => {
                   <Users className="w-5 h-5 text-gray-400" />
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">직원수</p>
-                    <p className="font-medium text-gray-900 dark:text-white">{formatNumber(company.employeeCount)}명</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{formatNumber(company.employeeCount ?? company.employee_count)}명</p>
                   </div>
                 </div>
 
@@ -323,7 +326,7 @@ const CompanyDetailPage = () => {
                                 fill="#8884d8"
                                 dataKey="value"
                               >
-                                {marketPositionData.map((entry, index) => (
+                                {marketPositionData.map((_, index) => (
                                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                 ))}
                               </Pie>
@@ -335,7 +338,7 @@ const CompanyDetailPage = () => {
                         <div>
                           <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">경쟁사 비교</h4>
                           <div className="space-y-3">
-                            {competitorData.map((competitor, index) => (
+                            {competitorData.map((competitor) => (
                               <div key={competitor.name} className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="font-medium text-gray-900 dark:text-white">
@@ -600,7 +603,7 @@ const CompanyDetailPage = () => {
                               </div>
                               <p className="text-gray-600 dark:text-gray-400 text-sm mt-2">
                                 최근 시장 변화에 따라 {company.name}의 성장 전망이 궁금합니다. 
-                                특히 {industry.name} 산업에서의 경쟁력이 어떠한지 전문가 분들의 의견이 필요합니다.
+                                특히 {companyIndustry?.name || '해당'} 산업에서의 경쟁력이 어떠한지 전문가 분들의 의견이 필요합니다.
                               </p>
                               
                               <div className="mt-4 pl-4 border-l-2 border-blue-200 dark:border-blue-800">
@@ -618,7 +621,7 @@ const CompanyDetailPage = () => {
                                 <p className="text-gray-700 dark:text-gray-300 text-sm">
                                   안녕하세요, {company.name} 담당자입니다. 
                                   저희 회사는 현재 {company.marketPosition?.split('시장')[0]} 시장에서 지속적인 성장을 이어가고 있습니다. 
-                                  올해는 {company.foundedYear + 5}년까지 매출 성장률 30% 목표를 가지고 있으며, 
+                                  올해는 {(company.foundedYear || company.founded_year) + 5}년까지 매출 성장률 30% 목표를 가지고 있으며, 
                                   신규 사업 다각화를 통해 안정적인 성장 기반을 마련하고 있습니다.
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">

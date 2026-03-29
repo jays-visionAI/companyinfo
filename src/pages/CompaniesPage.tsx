@@ -14,7 +14,7 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { cn, formatCurrency, formatNumber, getInvestmentStageColor } from '../lib/utils'
-import { allCompanies, industries, searchCompanies, sortCompaniesByRevenue } from '../data/sampleData'
+import { companies as allCompanies, industries } from '../data/sampleData'
 import type { Company, InvestmentStage, CompanySortBy, SortOrder } from '../types'
 
 const CompaniesPage: React.FC = () => {
@@ -25,27 +25,32 @@ const CompaniesPage: React.FC = () => {
   const [sortBy, setSortBy] = useState<CompanySortBy>('revenue')
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc')
   const [currentPage, setCurrentPage] = useState(1)
-  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>(allCompanies)
+  const [filteredCompanies, setFilteredCompanies] = useState<Company[]>(allCompanies as Company[])
 
   const itemsPerPage = 20
 
   // 필터링 및 정렬 적용
   useEffect(() => {
-    let result = [...allCompanies]
+    let result = [...allCompanies as any[]]
 
     // 검색 적용
     if (searchQuery.trim()) {
-      result = searchCompanies(searchQuery)
+      const query = searchQuery.toLowerCase();
+      result = result.filter(company => 
+        company.name?.toLowerCase().includes(query) ||
+        company.ceo_name?.toLowerCase().includes(query) ||
+        company.description?.toLowerCase().includes(query)
+      );
     }
 
     // 업종 필터 적용
     if (selectedIndustry !== 'all') {
-      result = result.filter(company => company.industryId === selectedIndustry)
+      result = result.filter(company => company.industry_id === selectedIndustry)
     }
 
     // 투자 단계 필터 적용
     if (selectedStage !== 'all') {
-      result = result.filter(company => company.investmentStage === selectedStage)
+      result = result.filter(company => company.investment_stage === selectedStage)
     }
 
     // 정렬 적용
@@ -61,17 +66,15 @@ const CompaniesPage: React.FC = () => {
           aValue = a.revenue
           bValue = b.revenue
           break
+        case 'employee_count':
         case 'employeeCount':
-          aValue = a.employeeCount
-          bValue = b.employeeCount
+          aValue = a.employee_count || a.employeeCount
+          bValue = b.employee_count || b.employeeCount
           break
+        case 'founded_year':
         case 'foundedYear':
-          aValue = a.foundedYear
-          bValue = b.foundedYear
-          break
-        case 'createdAt':
-          aValue = new Date(a.createdAt).getTime()
-          bValue = new Date(b.createdAt).getTime()
+          aValue = a.founded_year || a.foundedYear
+          bValue = b.founded_year || b.foundedYear
           break
         default:
           aValue = a.revenue
@@ -209,10 +212,10 @@ const CompaniesPage: React.FC = () => {
                 >
                   <option value="revenue-desc">매출 높은 순</option>
                   <option value="revenue-asc">매출 낮은 순</option>
-                  <option value="employeeCount-desc">직원수 많은 순</option>
-                  <option value="employeeCount-asc">직원수 적은 순</option>
-                  <option value="foundedYear-desc">최근 설립 순</option>
-                  <option value="foundedYear-asc">오래된 설립 순</option>
+                  <option value="employee_count-desc">직원수 많은 순</option>
+                  <option value="employee_count-asc">직원수 적은 순</option>
+                  <option value="founded_year-desc">최근 설립 순</option>
+                  <option value="founded_year-asc">오래된 설립 순</option>
                   <option value="name-asc">회사명 가나다순</option>
                 </select>
               </div>
@@ -244,7 +247,7 @@ const CompaniesPage: React.FC = () => {
         // 그리드 뷰
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {currentCompanies.map((company) => {
-            const industry = industries.find(ind => ind.id === company.industryId)
+            const industry = industries.find(ind => ind.id === company.industry_id)
             return (
               <Link
                 key={company.id}
@@ -259,9 +262,9 @@ const CompaniesPage: React.FC = () => {
                     </div>
                     <span className={cn(
                       "text-xs font-medium px-2 py-1 rounded-full",
-                      getInvestmentStageColor(company.investmentStage)
+                      getInvestmentStageColor(company.investment_stage)
                     )}>
-                      {company.investmentStage}
+                      {company.investment_stage}
                     </span>
                   </div>
 
@@ -289,21 +292,21 @@ const CompaniesPage: React.FC = () => {
                         <Users className="h-4 w-4 mr-1" />
                         직원수
                       </div>
-                      <p className="font-semibold text-gray-900">{formatNumber(company.employeeCount)}명</p>
+                      <p className="font-semibold text-gray-900">{formatNumber(company.employee_count)}명</p>
                     </div>
                     <div>
                       <div className="flex items-center text-sm text-gray-500 mb-1">
                         <Calendar className="h-4 w-4 mr-1" />
                         창업년도
                       </div>
-                      <p className="font-semibold text-gray-900">{company.foundedYear}년</p>
+                      <p className="font-semibold text-gray-900">{company.founded_year}년</p>
                     </div>
                     <div>
                       <div className="flex items-center text-sm text-gray-500 mb-1">
                         <User className="h-4 w-4 mr-1" />
                         대표자
                       </div>
-                      <p className="font-semibold text-gray-900 truncate">{company.ceoName}</p>
+                      <p className="font-semibold text-gray-900 truncate">{company.ceo_name}</p>
                     </div>
                   </div>
                 </div>
@@ -337,11 +340,11 @@ const CompaniesPage: React.FC = () => {
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSortClick('foundedYear')}
+                    onClick={() => handleSortClick('founded_year')}
                   >
                     <div className="flex items-center">
                       창업년도
-                      {sortBy === 'foundedYear' && (
+                      {sortBy === 'founded_year' && (
                         <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </div>
@@ -351,11 +354,11 @@ const CompaniesPage: React.FC = () => {
                   </th>
                   <th 
                     className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                    onClick={() => handleSortClick('employeeCount')}
+                    onClick={() => handleSortClick('employee_count')}
                   >
                     <div className="flex items-center">
                       직원수
-                      {sortBy === 'employeeCount' && (
+                      {sortBy === 'employee_count' && (
                         <span className="ml-1">{sortOrder === 'asc' ? '↑' : '↓'}</span>
                       )}
                     </div>
@@ -367,7 +370,7 @@ const CompaniesPage: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {currentCompanies.map((company) => {
-                  const industry = industries.find(ind => ind.id === company.industryId)
+                  const industry = industries.find(ind => ind.id === company.industry_id)
                   return (
                     <tr 
                       key={company.id}
@@ -394,20 +397,20 @@ const CompaniesPage: React.FC = () => {
                         <span className="text-sm text-gray-900">{industry?.name}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{company.foundedYear}년</div>
+                        <div className="text-sm text-gray-900">{company.founded_year}년</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{company.ceoName}</div>
+                        <div className="text-sm text-gray-900">{company.ceo_name}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">{formatNumber(company.employeeCount)}명</div>
+                        <div className="text-sm text-gray-900">{formatNumber(company.employee_count)}명</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={cn(
                           "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-                          getInvestmentStageColor(company.investmentStage)
+                          getInvestmentStageColor(company.investment_stage)
                         )}>
-                          {company.investmentStage}
+                          {company.investment_stage}
                         </span>
                       </td>
                     </tr>

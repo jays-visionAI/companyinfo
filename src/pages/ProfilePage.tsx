@@ -9,7 +9,6 @@ import {
   Save, 
   X, 
   Shield,
-  Briefcase,
   Globe,
   Phone,
   MapPin,

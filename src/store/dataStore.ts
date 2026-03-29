@@ -1,414 +1,354 @@
-import { create } from 'zustand'
-import { supabase } from '../lib/supabase'
+import create from 'zustand'
+import {
+  Company,
+  Industry,
+  FinancialData,
+  CompanyDocument,
+  CommunityPost,
+  User,
+  CompanyFilter,
+  CompanySortBy,
+  SortOrder,
+  Pagination,
+  CommunityPostFilter,
+  CommunityPostSortBy,
+  Comment,
+} from '../types'
+import {
+  companies as sampleCompanies,
+  industries as sampleIndustries,
+  financialData as sampleFinancialData,
+  documents as sampleDocuments,
+  communityPosts as sampleCommunityPosts,
+  users as sampleUsers,
+} from '../data/sampleData'
 import { useAuthStore } from './authStore'
-import type { Company, Industry, CommunityPost } from '../types'
 
 interface DataState {
-  // 데이터 상태
+  // Data
   companies: Company[]
   industries: Industry[]
+  financialData: FinancialData[]
+  documents: CompanyDocument[]
   communityPosts: CommunityPost[]
-  
-  // 로딩 상태
-  isLoading: {
-    companies: boolean
-    industries: boolean
-    communityPosts: boolean
-  }
-  
-  // 에러 상태
-  errors: {
-    companies: string | null
-    industries: string | null
-    communityPosts: string | null
-  }
-  
-  // 필터 및 정렬
-  filters: {
-    searchQuery: string
-    industryId: string | null
-    investmentStage: string | null
-    sortBy: 'name' | 'revenue' | 'employeeCount' | 'createdAt'
-    sortOrder: 'asc' | 'desc'
-  }
-  
-  // 페이지네이션
-  pagination: {
-    currentPage: number
-    itemsPerPage: number
-    totalItems: number
-  }
-  
+  users: User[]
+
+  // Company List State
+  filteredCompanies: Company[]
+  filters: CompanyFilter
+  sortBy: CompanySortBy
+  sortOrder: SortOrder
+  pagination: Pagination
+
+  // Community Page State
+  filteredCommunityPosts: CommunityPost[]
+  communityFilters: CommunityPostFilter
+  communitySortBy: CommunityPostSortBy
+  communitySortOrder: SortOrder
+  communityPagination: Pagination
+
+  // Loading and Error State
+  loading: boolean
+  error: string | null
+
   // Actions
-  setFilters: (filters: Partial<DataState['filters']>) => void
-  setPagination: (pagination: Partial<DataState['pagination']>) => void
+  initializeData: () => void
+  getCompanyById: (id: string) => Company | undefined
+  getIndustryById: (id: string) => Industry | undefined
+  getFinancialDataForCompany: (companyId: string) => FinancialData[]
+  getDocumentsForCompany: (companyId: string) => CompanyDocument[]
+  getPostById: (id: string) => CommunityPost | undefined
+
+  // Company List Actions
+  setFilters: (filters: Partial<CompanyFilter>) => void
+  setSort: (sortBy: CompanySortBy, sortOrder: SortOrder) => void
+  setPage: (page: number) => void
+  applyFiltersAndSort: () => void
+
+  // Community Page Actions
+  setCommunityFilters: (filters: Partial<CommunityPostFilter>) => void
+  setCommunitySort: (sortBy: CommunityPostSortBy, sortOrder: SortOrder) => void
+  setCommunityPage: (page: number) => void
+  applyCommunityFiltersAndSort: () => void
+  addPost: (post: Omit<CommunityPost, 'id' | 'created_at' | 'author_id' | 'author_name' | 'author_avatar' | 'likes' | 'comments'>) => void
+  addComment: (postId: string, comment: Omit<Comment, 'id' | 'author_id' | 'author_name' | 'author_avatar' | 'created_at'>) => void
+  toggleLike: (postId: string) => void
   
-  // 데이터 가져오기
-  fetchCompanies: () => Promise<void>
-  fetchIndustries: () => Promise<void>
-  fetchCommunityPosts: () => Promise<void>
-  
-  // 데이터 생성/수정/삭제
-  createCompany: (companyData: Partial<Company>) => Promise<{ success: boolean; error?: string }>
-  updateCompany: (id: string, companyData: Partial<Company>) => Promise<{ success: boolean; error?: string }>
-  deleteCompany: (id: string) => Promise<{ success: boolean; error?: string }>
-  
-  createCommunityPost: (postData: Partial<CommunityPost>) => Promise<{ success: boolean; error?: string }>
-  updateCommunityPost: (id: string, postData: Partial<CommunityPost>) => Promise<{ success: boolean; error?: string }>
-  deleteCommunityPost: (id: string) => Promise<{ success: boolean; error?: string }>
-  
-  // 필터링된 데이터
-  getFilteredCompanies: () => Company[]
+  // Search
+  setSearchTerm: (term: string) => void
 }
 
-export const useDataStore = create<DataState>((set, get) => ({
+const useDataStore = create<DataState>((set, get) => ({
+  // Initial Data
   companies: [],
   industries: [],
+  financialData: [],
+  documents: [],
   communityPosts: [],
-  
-  isLoading: {
-    companies: false,
-    industries: false,
-    communityPosts: false
-  },
-  
-  errors: {
-    companies: null,
-    industries: null,
-    communityPosts: null
-  },
-  
-  filters: {
-    searchQuery: '',
-    industryId: null,
-    investmentStage: null,
-    sortBy: 'createdAt',
-    sortOrder: 'desc'
-  },
-  
+  users: [],
+
+  // Initial Company List State
+  filteredCompanies: [],
+  filters: {},
+  sortBy: 'created_at',
+  sortOrder: 'desc',
   pagination: {
-    currentPage: 1,
-    itemsPerPage: 12,
-    totalItems: 0
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  },
+
+  // Initial Community Page State
+  filteredCommunityPosts: [],
+  communityFilters: {},
+  communitySortBy: 'created_at',
+  communitySortOrder: 'desc',
+  communityPagination: {
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0,
+  },
+
+  // Initial Loading and Error State
+  loading: true,
+  error: null,
+
+  // --- ACTIONS ---
+
+  initializeData: (): Promise<void> => {
+    return new Promise((resolve) => {
+      set({
+        loading: true,
+        companies: sampleCompanies as Company[],
+        industries: sampleIndustries,
+        financialData: sampleFinancialData,
+        documents: sampleDocuments,
+        communityPosts: sampleCommunityPosts,
+        users: sampleUsers,
+      })
+      set({ loading: false })
+      get().applyFiltersAndSort()
+      get().applyCommunityFiltersAndSort()
+      resolve()
+    })
+  },
+
+  getCompanyById: (id: string) => {
+    return get().companies.find(c => c.id === id)
+  },
+
+  getIndustryById: (id: string) => {
+    return get().industries.find(i => i.id === id)
+  },
+
+  getFinancialDataForCompany: (companyId: string) => {
+    return get().financialData.filter(fd => fd.company_id === companyId)
+  },
+
+  getDocumentsForCompany: (companyId: string) => {
+    return get().documents.filter(d => d.company_id === companyId)
   },
   
-  setFilters: (filters) => {
-    set((state) => ({
-      filters: { ...state.filters, ...filters },
-      pagination: { ...state.pagination, currentPage: 1 }
-    }))
+  getPostById: (id: string) => {
+    return get().communityPosts.find(p => p.id === id)
   },
-  
-  setPagination: (pagination) => {
-    set((state) => ({
-      pagination: { ...state.pagination, ...pagination }
-    }))
+
+  // --- COMPANY LIST ACTIONS ---
+
+  setFilters: (newFilters: Partial<CompanyFilter>) => {
+    set(state => ({ filters: { ...state.filters, ...newFilters }, pagination: { ...state.pagination, page: 1 } }))
+    get().applyFiltersAndSort()
   },
-  
-  fetchCompanies: async () => {
-    try {
-      set((state) => ({
-        isLoading: { ...state.isLoading, companies: true },
-        errors: { ...state.errors, companies: null }
-      }))
-      
-      const { data, error } = await supabase
-        .from('companies')
-        .select('*, industries(*)')
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      
-      set((state) => ({
-        companies: data || [],
-        isLoading: { ...state.isLoading, companies: false },
-        pagination: { ...state.pagination, totalItems: data?.length || 0 }
-      }))
-    } catch (error: any) {
-      console.error('회사 데이터 가져오기 오류:', error)
-      set((state) => ({
-        isLoading: { ...state.isLoading, companies: false },
-        errors: { ...state.errors, companies: error.message }
-      }))
-    }
+
+  setSort: (sortBy: CompanySortBy, sortOrder: SortOrder) => {
+    set({ sortBy, sortOrder })
+    get().applyFiltersAndSort()
   },
-  
-  fetchIndustries: async () => {
-    try {
-      set((state) => ({
-        isLoading: { ...state.isLoading, industries: true },
-        errors: { ...state.errors, industries: null }
-      }))
-      
-      const { data, error } = await supabase
-        .from('industries')
-        .select('*')
-        .order('name')
-      
-      if (error) throw error
-      
-      set((state) => ({
-        industries: data || [],
-        isLoading: { ...state.isLoading, industries: false }
-      }))
-    } catch (error: any) {
-      console.error('업종 데이터 가져오기 오류:', error)
-      set((state) => ({
-        isLoading: { ...state.isLoading, industries: false },
-        errors: { ...state.errors, industries: error.message }
-      }))
-    }
+
+  setPage: (page: number) => {
+    set(state => ({ pagination: { ...state.pagination, page } }))
+    get().applyFiltersAndSort()
   },
-  
-  fetchCommunityPosts: async () => {
-    try {
-      set((state) => ({
-        isLoading: { ...state.isLoading, communityPosts: true },
-        errors: { ...state.errors, communityPosts: null }
-      }))
-      
-      const { data, error } = await supabase
-        .from('community_posts')
-        .select('*, profiles(full_name, role), companies(name)')
-        .order('created_at', { ascending: false })
-      
-      if (error) throw error
-      
-      set((state) => ({
-        communityPosts: data || [],
-        isLoading: { ...state.isLoading, communityPosts: false }
-      }))
-    } catch (error: any) {
-      console.error('커뮤니티 게시물 가져오기 오류:', error)
-      set((state) => ({
-        isLoading: { ...state.isLoading, communityPosts: false },
-        errors: { ...state.errors, communityPosts: error.message }
-      }))
-    }
-  },
-  
-  createCompany: async (companyData) => {
-    try {
-      const { data, error } = await supabase
-        .from('companies')
-        .insert([{
-          ...companyData,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
-        .select()
-      
-      if (error) throw error
-      
-      // 로컬 상태 업데이트
-      set((state) => ({
-        companies: [data[0], ...state.companies]
-      }))
-      
-      return { success: true }
-    } catch (error: any) {
-      console.error('회사 생성 오류:', error)
-      return { success: false, error: error.message }
-    }
-  },
-  
-  updateCompany: async (id, companyData) => {
-    try {
-      const { data, error } = await supabase
-        .from('companies')
-        .update({
-          ...companyData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-      
-      if (error) throw error
-      
-      // 로컬 상태 업데이트
-      set((state) => ({
-        companies: state.companies.map(company => 
-          company.id === id ? { ...company, ...data[0] } : company
-        )
-      }))
-      
-      return { success: true }
-    } catch (error: any) {
-      console.error('회사 수정 오류:', error)
-      return { success: false, error: error.message }
-    }
-  },
-  
-  deleteCompany: async (id) => {
-    try {
-      const { error } = await supabase
-        .from('companies')
-        .delete()
-        .eq('id', id)
-      
-      if (error) throw error
-      
-      // 로컬 상태 업데이트
-      set((state) => ({
-        companies: state.companies.filter(company => company.id !== id)
-      }))
-      
-      return { success: true }
-    } catch (error: any) {
-      console.error('회사 삭제 오류:', error)
-      return { success: false, error: error.message }
-    }
-  },
-  
-  createCommunityPost: async (postData) => {
-    try {
-      const { user } = useAuthStore.getState()
-      if (!user) throw new Error('로그인이 필요합니다.')
-      
-      const { data, error } = await supabase
-        .from('community_posts')
-        .insert([{
-          ...postData,
-          author_id: user.id,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }])
-        .select()
-      
-      if (error) throw error
-      
-      // 로컬 상태 업데이트
-      set((state) => ({
-        communityPosts: [data[0], ...state.communityPosts]
-      }))
-      
-      return { success: true }
-    } catch (error: any) {
-      console.error('게시물 생성 오류:', error)
-      return { success: false, error: error.message }
-    }
-  },
-  
-  updateCommunityPost: async (id, postData) => {
-    try {
-      const { data, error } = await supabase
-        .from('community_posts')
-        .update({
-          ...postData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', id)
-        .select()
-      
-      if (error) throw error
-      
-      // 로컬 상태 업데이트
-      set((state) => ({
-        communityPosts: state.communityPosts.map(post => 
-          post.id === id ? { ...post, ...data[0] } : post
-        )
-      }))
-      
-      return { success: true }
-    } catch (error: any) {
-      console.error('게시물 수정 오류:', error)
-      return { success: false, error: error.message }
-    }
-  },
-  
-  deleteCommunityPost: async (id) => {
-    try {
-      const { error } = await supabase
-        .from('community_posts')
-        .delete()
-        .eq('id', id)
-      
-      if (error) throw error
-      
-      // 로컬 상태 업데이트
-      set((state) => ({
-        communityPosts: state.communityPosts.filter(post => post.id !== id)
-      }))
-      
-      return { success: true }
-    } catch (error: any) {
-      console.error('게시물 삭제 오류:', error)
-      return { success: false, error: error.message }
-    }
-  },
-  
-  getFilteredCompanies: () => {
-    const { companies, filters } = get()
-    
-    let filtered = [...companies]
-    
-    // 검색어 필터링
-    if (filters.searchQuery) {
-      const query = filters.searchQuery.toLowerCase()
-      filtered = filtered.filter(company => 
-        company.name.toLowerCase().includes(query) ||
-        company.description?.toLowerCase().includes(query) ||
-        company.location.toLowerCase().includes(query)
+
+  applyFiltersAndSort: () => {
+    const { companies, filters, sortBy, sortOrder, pagination } = get()
+    let result: Company[] = [...companies]
+
+    // Filtering logic...
+    if (filters.searchTerm) {
+      const term = filters.searchTerm.toLowerCase()
+      result = result.filter(c => 
+        c.name.toLowerCase().includes(term) || 
+        c.description.toLowerCase().includes(term)
       )
     }
-    
-    // 업종 필터링
     if (filters.industryId) {
-      filtered = filtered.filter(company => {
-        const industryId = company.industry_id || company.industryId
-        return industryId === filters.industryId
-      })
+      result = result.filter(c => c.industry_id === filters.industryId)
     }
-    
-    // 투자 단계 필터링
-    if (filters.investmentStage) {
-      filtered = filtered.filter(company => {
-        const investmentStage = company.investment_stage || company.investmentStage
-        return investmentStage === filters.investmentStage
-      })
+    // ... other filters
+
+    // Sorting logic - 모든 가능한 필드 지원
+    const sortFields: Record<string, (c: Company) => string | number | undefined> = {
+      'name': c => c.name,
+      'revenue': c => c.revenue,
+      'employee_count': c => c.employee_count,
+      'founded_year': c => c.founded_year,
+      'created_at': c => c.created_at,
+      // 별칭 필드들
+      'foundedYear': c => c.founded_year,
+      'employeeCount': c => c.employee_count,
     }
-    
-    // 정렬
-    filtered.sort((a, b) => {
-      let aValue: any, bValue: any
-      
-      switch (filters.sortBy) {
-        case 'name':
-          aValue = a.name
-          bValue = b.name
-          break
-        case 'revenue':
-          aValue = a.revenue || 0
-          bValue = b.revenue || 0
-          break
-        case 'employeeCount':
-          aValue = (a.employee_count || a.employeeCount || 0)
-          bValue = (b.employee_count || b.employeeCount || 0)
-          break
-        case 'createdAt':
-          aValue = new Date(a.created_at || a.createdAt || 0).getTime()
-          bValue = new Date(b.created_at || b.createdAt || 0).getTime()
-          break
-        default:
-          aValue = a.name
-          bValue = b.name
-      }
-      
-      if (filters.sortOrder === 'asc') {
-        return aValue > bValue ? 1 : -1
-      } else {
-        return aValue < bValue ? 1 : -1
-      }
+
+    const sortField = sortFields[sortBy] || sortFields['created_at']
+
+    result.sort((a, b) => {
+      const aValue = sortField(a)
+      const bValue = sortField(b)
+      if (aValue === undefined || bValue === undefined) return 0
+      let comparison = 0
+      if (aValue > bValue) comparison = 1
+      else if (aValue < bValue) comparison = -1
+      return sortOrder === 'desc' ? comparison * -1 : comparison
     })
-    
-    return filtered
-  }
+
+    const total = result.length
+    const totalPages = Math.ceil(total / pagination.limit)
+    const startIndex = (pagination.page - 1) * pagination.limit
+    const paginatedResult = result.slice(startIndex, startIndex + pagination.limit)
+
+    set({
+      filteredCompanies: paginatedResult,
+      pagination: { ...pagination, total, totalPages },
+    })
+  },
+
+  // --- COMMUNITY PAGE ACTIONS ---
+
+  setCommunityFilters: (newFilters: Partial<CommunityPostFilter>) => {
+    set(state => ({
+      communityFilters: { ...state.communityFilters, ...newFilters },
+      communityPagination: { ...state.communityPagination, page: 1 },
+    }))
+    get().applyCommunityFiltersAndSort()
+  },
+
+  setCommunitySort: (sortBy: CommunityPostSortBy, sortOrder: SortOrder) => {
+    set({ communitySortBy: sortBy, communitySortOrder: sortOrder })
+    get().applyCommunityFiltersAndSort()
+  },
+
+  setCommunityPage: (page: number) => {
+    set(state => ({ communityPagination: { ...state.communityPagination, page } }))
+    get().applyCommunityFiltersAndSort()
+  },
+
+  applyCommunityFiltersAndSort: () => {
+    const { communityPosts, communityFilters, communitySortBy, communitySortOrder, communityPagination } = get()
+    let result: CommunityPost[] = [...communityPosts]
+
+    if (communityFilters.searchTerm) {
+      const term = communityFilters.searchTerm.toLowerCase()
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(term) ||
+        p.content.toLowerCase().includes(term) ||
+        (p.author_name && p.author_name.toLowerCase().includes(term))
+      )
+    }
+    if (communityFilters.postType && communityFilters.postType !== 'all') {
+      result = result.filter(p => p.post_type === communityFilters.postType)
+    }
+
+    result.sort((a, b) => {
+      let aValue, bValue;
+      if (communitySortBy === 'comments') {
+        aValue = a.comments.length;
+        bValue = b.comments.length;
+      } else {
+        aValue = a[communitySortBy];
+        bValue = b[communitySortBy];
+      }
+      
+      if (aValue === undefined || bValue === undefined) return 0
+      let comparison = 0
+      if (aValue > bValue) comparison = 1
+      else if (aValue < bValue) comparison = -1
+      return communitySortOrder === 'desc' ? comparison * -1 : comparison
+    })
+
+    const total = result.length
+    const totalPages = Math.ceil(total / communityPagination.limit)
+    const startIndex = (communityPagination.page - 1) * communityPagination.limit
+    const paginatedResult = result.slice(startIndex, startIndex + communityPagination.limit)
+
+    set({
+      filteredCommunityPosts: paginatedResult,
+      communityPagination: { ...communityPagination, total, totalPages },
+    })
+  },
+  
+  addPost: (post) => {
+    const { user } = useAuthStore.getState()
+    const newPost: CommunityPost = {
+      ...post,
+      id: `post-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      author_id: user?.id || 'sample-user-id',
+      author_name: user?.user_metadata?.full_name || '샘플 사용자',
+      author_avatar: user?.user_metadata?.avatar_url || `https://i.pravatar.cc/150?u=${user?.id || 'sample-user-id'}`,
+      likes: 0,
+      comments: [],
+    }
+    set(state => ({ communityPosts: [newPost, ...state.communityPosts] }))
+    get().applyCommunityFiltersAndSort()
+  },
+
+  addComment: (postId, comment) => {
+    const { user } = useAuthStore.getState()
+    const newComment: Comment = {
+      ...comment,
+      id: `comment-${Date.now()}`,
+      author_id: user?.id || 'sample-user-id',
+      author_name: user?.user_metadata?.full_name || '샘플 사용자',
+      author_avatar: user?.user_metadata?.avatar_url || `https://i.pravatar.cc/150?u=${user?.id || 'sample-user-id'}`,
+      created_at: new Date().toISOString(),
+    }
+    set(state => ({
+      communityPosts: state.communityPosts.map(post =>
+        post.id === postId
+          ? { ...post, comments: [...post.comments, newComment] }
+          : post
+      ),
+    }))
+    get().applyCommunityFiltersAndSort()
+  },
+  
+  toggleLike: (postId: string) => {
+    set(state => ({
+      communityPosts: state.communityPosts.map(post => {
+        if (post.id === postId) {
+          // In a real app, you'd track who liked it. Here we just toggle.
+          // For simplicity, we'll just increment. A real implementation would be more complex.
+          return { ...post, likes: (post.likes || 0) + 1 }; 
+        }
+        return post;
+      })
+    }))
+    get().applyCommunityFiltersAndSort();
+  },
+
+  // --- SEARCH ---
+  setSearchTerm: (term: string) => {
+    set(state => ({ filters: { ...state.filters, searchTerm: term } }))
+    get().applyFiltersAndSort()
+  },
 }))
 
-// 데이터 초기화
-export const initializeData = () => {
-  const store = useDataStore.getState()
-  store.fetchCompanies()
-  store.fetchIndustries()
-  store.fetchCommunityPosts()
+export const { getState: getDataState, setState: setDataState, subscribe: subscribeData } = useDataStore
+
+export const initializeData = (): Promise<void> => {
+  return Promise.resolve(useDataStore.getState().initializeData())
 }
+
+export default useDataStore

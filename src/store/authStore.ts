@@ -11,7 +11,7 @@ interface AuthState {
   // Actions
   setUser: (user: User | null) => void
   setLoading: (loading: boolean) => void
-  checkAuth: () => Promise<void>
+  checkAuth: () => Promise<boolean>
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
   signUp: (email: string, password: string, userData: any) => Promise<{ success: boolean; error?: string }>
   signOut: () => Promise<void>
@@ -37,8 +37,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   checkAuth: async () => {
     try {
-      // Supabase 연결 시도
-      const { user, error } = await getCurrentUser()
+      // Supabase 연결 시도 (타임아웃 설정)
+      const timeoutPromise = new Promise<{user: null, error: Error}>((_, reject) => 
+        setTimeout(() => reject(new Error('인증 확인 타임아웃')), 3000)
+      );
+      
+      const authPromise = getCurrentUser();
+      
+      // 타임아웃과 인증 확인 경쟁
+      const { user, error } = await Promise.race([authPromise, timeoutPromise]) as any;
       
       if (user && !error) {
         const role = user.user_metadata?.role || 'user'
@@ -47,44 +54,31 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isAuthenticated: true, 
           userRole: role as any,
           isLoading: false 
-        })
+        });
+        return true;
       } else {
-        // Supabase 연결 실패 시 샘플 사용자로 로그인
-        console.log('Supabase 연결 실패, 샘플 사용자로 로그인합니다.')
-        const sampleUser = {
-          id: 'sample-user-id',
-          email: 'user@example.com',
-          user_metadata: {
-            role: 'user',
-            fullName: '샘플 사용자'
-          }
-        } as any
-        
-        set({ 
-          user: sampleUser, 
-          isAuthenticated: true, 
-          userRole: 'user',
-          isLoading: false 
-        })
+        throw new Error('사용자 정보를 가져올 수 없습니다.');
       }
     } catch (error) {
-      console.error('인증 확인 중 오류:', error)
-      // 오류 발생 시에도 샘플 사용자로 로그인
+      console.log('인증 확인 중 오류, 샘플 사용자로 로그인합니다:', error);
+      // 오류 발생 시에는 샘플 사용자로 로그인
       const sampleUser = {
         id: 'sample-user-id',
         email: 'user@example.com',
         user_metadata: {
           role: 'user',
-          fullName: '샘플 사용자'
+          fullName: '샘플 사용자',
+          avatar_url: 'https://i.pravatar.cc/150?u=sample-user-id'
         }
-      } as any
+      } as any;
       
       set({ 
         user: sampleUser, 
         isAuthenticated: true, 
         userRole: 'user',
         isLoading: false 
-      })
+      });
+      return false;
     }
   },
 
@@ -218,17 +212,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   }
 }))
 
-// 인증 상태 초기화
-export const initializeAuth = () => {
-  const store = useAuthStore.getState()
-  store.checkAuth()
-  
-  // 세션 변경 감지
-  supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-      store.setUser(session?.user || null)
-    } else if (event === 'SIGNED_OUT') {
-      store.setUser(null)
+// 인증 상태 초기화 - Promise 반환
+export const initializeAuth = (): Promise<void> => {
+  return new Promise(async (resolve) => {
+    try {
+      const store = useAuthStore.getState()
+      await store.checkAuth()
+      
+      // 세션 변경 감지 - unsubscribe 함수 저장
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+          store.setUser(session?.user || null)
+        } else if (event === 'SIGNED_OUT') {
+          store.setUser(null)
+        }
+      })
+      
+      // 구독 해제를 위한cleanup 함수 (필요시 사용)
+      ;(window as any).__authSubscription = subscription
+    } catch (error) {
+      console.log('인증 초기화 오류, 샘플 모드로 진행:', error)
     }
+    resolve()
   })
 }

@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { Lock, Eye, EyeOff, CheckCircle, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate()
-  const location = useLocation()
   
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')

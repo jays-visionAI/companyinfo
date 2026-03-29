@@ -11,14 +11,14 @@ import {
   Filter
 } from 'lucide-react'
 import { cn, formatCurrency, formatNumber } from '../lib/utils'
-import { allCompanies, industries, communityPosts } from '../data/sampleData'
+import { companies as allCompanies, industries, communityPosts } from '../data/sampleData'
 
 const DashboardPage: React.FC = () => {
   const totalCompanies = allCompanies.length
   const totalRevenue = allCompanies.reduce((sum, company) => sum + company.revenue, 0)
-  const totalEmployees = allCompanies.reduce((sum, company) => sum + company.employeeCount, 0)
+  const totalEmployees = allCompanies.reduce((sum, company) => sum + (company.employeeCount || 0), 0)
   const recentCompanies = [...allCompanies]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => (b.createdAt ? new Date(b.createdAt).getTime() : 0) - (a.createdAt ? new Date(a.createdAt).getTime() : 0))
     .slice(0, 5)
   
   const popularIndustries = [...industries]
@@ -26,7 +26,7 @@ const DashboardPage: React.FC = () => {
     .slice(0, 4)
 
   const recentPosts = [...communityPosts]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .slice(0, 3)
 
   return (
@@ -144,7 +144,7 @@ const DashboardPage: React.FC = () => {
                       </div>
                       <div className="text-right">
                         <p className="font-semibold text-gray-900">{formatCurrency(company.revenue)}</p>
-                        <p className="text-sm text-gray-500">{company.employeeCount}명</p>
+                        <p className="text-sm text-gray-500">{company.employeeCount || 0}명</p>
                       </div>
                     </div>
                   </Link>
@@ -219,7 +219,7 @@ const DashboardPage: React.FC = () => {
             </div>
             <div className="divide-y">
               {recentPosts.map((post) => {
-                const company = allCompanies.find(c => c.id === post.companyId)
+                const company = allCompanies.find((c: any) => c.id === post.companyId)
                 return (
                   <Link
                     key={post.id}
