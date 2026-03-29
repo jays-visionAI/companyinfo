@@ -17,12 +17,11 @@ import {
   LogOut
 } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
-import { supabase } from '../lib/supabase'
 import { formatDate } from '../lib/utils'
 
 const ProfilePage = () => {
   const navigate = useNavigate()
-  const { user, userRole, signOut, updateProfile } = useAuthStore()
+  const { user, userRole, signOut, updateProfile, profile } = useAuthStore()
   
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -39,49 +38,18 @@ const ProfilePage = () => {
     emailNotifications: true
   })
 
-  const [userProfile, setUserProfile] = useState<any>(null)
-
   useEffect(() => {
     if (!user) {
       navigate('/login')
       return
     }
 
-    loadProfile()
-  }, [user])
-
-  const loadProfile = async () => {
-    try {
-      // auth에서 기본 정보 가져오기
-      const metadata = user?.user_metadata || {}
-      
-      // profiles 테이블에서 추가 정보 가져오기
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single()
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('프로필 로드 오류:', error)
-      }
-
-      const profile = data || {}
-      
-      setUserProfile(profile)
-      setProfileData({
-        fullName: profile.full_name || metadata.fullName || '',
-        phone: profile.phone || '',
-        location: profile.location || '',
-        bio: profile.bio || '',
-        website: profile.website || '',
-        notifications: profile.notifications !== false,
-        emailNotifications: profile.email_notifications !== false
-      })
-    } catch (error) {
-      console.error('프로필 로드 중 오류:', error)
-    }
-  }
+    // Firebase Auth에서 사용자 정보 로드
+    setProfileData(prev => ({
+      ...prev,
+      fullName: user.displayName || profile?.fullName || '',
+    }))
+  }, [user, profile])
 
   const handleSave = async () => {
     setError('')
@@ -94,11 +62,8 @@ const ProfilePage = () => {
       if (result.success) {
         setSuccess('프로필이 성공적으로 업데이트되었습니다.')
         setIsEditing(false)
-        
-        // 프로필 다시 로드
         setTimeout(() => {
           setSuccess('')
-          loadProfile()
         }, 2000)
       } else {
         setError(result.error || '프로필 업데이트 중 오류가 발생했습니다.')
@@ -112,8 +77,18 @@ const ProfilePage = () => {
 
   const handleCancel = () => {
     setIsEditing(false)
-    loadProfile()
     setError('')
+    if (user) {
+      setProfileData({
+        fullName: user.displayName || profile?.fullName || '',
+        phone: profile?.phone || '',
+        location: profile?.location || '',
+        bio: profile?.bio || '',
+        website: profile?.website || '',
+        notifications: profile?.notifications ?? true,
+        emailNotifications: profile?.email_notifications ?? profile?.emailNotifications ?? true
+      })
+    }
   }
 
   const handleSignOut = async () => {
@@ -125,13 +100,13 @@ const ProfilePage = () => {
     return null
   }
 
-  const roleLabels = {
+  const roleLabels: Record<string, { label: string; color: string }> = {
     user: { label: '일반 사용자', color: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' },
     company_rep: { label: '회사 담당자', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
     admin: { label: '관리자', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' }
   }
 
-  const roleInfo = roleLabels[userRole as keyof typeof roleLabels] || roleLabels.user
+  const roleInfo = roleLabels[userRole || 'user'] || roleLabels.user
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -151,9 +126,9 @@ const ProfilePage = () => {
               {/* 프로필 아바타 */}
               <div className="text-center mb-6">
                 <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 mb-4">
-                  {userProfile?.avatar_url ? (
+                  {profile?.avatar || user.photoURL ? (
                     <img 
-                      src={userProfile.avatar_url} 
+                      src={profile?.avatar || user.photoURL || ''} 
                       alt={profileData.fullName}
                       className="w-full h-full rounded-full object-cover"
                     />
@@ -185,7 +160,7 @@ const ProfilePage = () => {
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">가입일</p>
                     <p className="font-medium text-gray-900 dark:text-white">
-                      {formatDate(user.created_at)}
+                      {user.metadata?.creationTime ? formatDate(new Date(user.metadata.creationTime)) : '정보 없음'}
                     </p>
                   </div>
                 </div>
@@ -195,7 +170,7 @@ const ProfilePage = () => {
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400">계정 상태</p>
                     <p className="font-medium text-green-600 dark:text-green-400">
-                      {user.email_confirmed_at ? '인증 완료' : '이메일 인증 필요'}
+                      {user.emailVerified ? '인증 완료' : '이메일 인증 필요'}
                     </p>
                   </div>
                 </div>
@@ -400,7 +375,7 @@ const ProfilePage = () => {
                 </div>
 
                 {/* 회사 담당자 정보 */}
-                {userRole === 'company_rep' && userProfile?.company_id && (
+                {(userRole === 'company_rep' || userRole === 'admin') && profile?.companyId && (
                   <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <div className="flex items-center gap-3 mb-3">
                       <Building2 className="w-5 h-5 text-blue-600 dark:text-blue-400" />

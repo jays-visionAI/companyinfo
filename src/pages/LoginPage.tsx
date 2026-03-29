@@ -45,8 +45,8 @@ const LoginPage = () => {
 
       const userData = {
         fullName,
-        role,
-        companyName: role === 'company_rep' ? companyName : null
+        role: role as 'user' | 'company_rep',
+        companyId: role === 'company_rep' ? companyName : undefined
       }
 
       const result = await useAuthStore.getState().signUp(email, password, userData)

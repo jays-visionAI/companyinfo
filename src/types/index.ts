@@ -1,5 +1,5 @@
 // 유저 역할 타입
-export type UserRole = 'user' | 'company_admin' | 'admin'
+export type UserRole = 'user' | 'company_rep' | 'admin'
 
 // 유저 인터페이스
 export interface User {
@@ -114,6 +114,7 @@ export interface Profile {
   companyId?: string // 호환성을 위한 별칭
   notifications: boolean
   email_notifications: boolean
+  emailNotifications?: boolean // 호환성을 위한 별칭
   created_at: string
   updated_at: string
 }

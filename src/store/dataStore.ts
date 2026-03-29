@@ -294,9 +294,9 @@ const useDataStore = create<DataState>((set, get) => ({
       ...post,
       id: `post-${Date.now()}`,
       created_at: new Date().toISOString(),
-      author_id: user?.id || 'sample-user-id',
-      author_name: user?.user_metadata?.full_name || '샘플 사용자',
-      author_avatar: user?.user_metadata?.avatar_url || `https://i.pravatar.cc/150?u=${user?.id || 'sample-user-id'}`,
+      author_id: user?.uid || 'sample-user-id',
+      author_name: user?.displayName || '샘플 사용자',
+      author_avatar: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid || 'sample-user-id'}`,
       likes: 0,
       comments: [],
     }
@@ -309,9 +309,9 @@ const useDataStore = create<DataState>((set, get) => ({
     const newComment: Comment = {
       ...comment,
       id: `comment-${Date.now()}`,
-      author_id: user?.id || 'sample-user-id',
-      author_name: user?.user_metadata?.full_name || '샘플 사용자',
-      author_avatar: user?.user_metadata?.avatar_url || `https://i.pravatar.cc/150?u=${user?.id || 'sample-user-id'}`,
+      author_id: user?.uid || 'sample-user-id',
+      author_name: user?.displayName || '샘플 사용자',
+      author_avatar: user?.photoURL || `https://i.pravatar.cc/150?u=${user?.uid || 'sample-user-id'}`,
       created_at: new Date().toISOString(),
     }
     set(state => ({

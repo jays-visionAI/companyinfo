@@ -1,108 +1,103 @@
 import { create } from 'zustand'
-import { supabase, getCurrentUser } from '../lib/supabase'
-import type { User } from '@supabase/supabase-js'
+import { User } from 'firebase/auth'
+import { signIn, signUp, signOut as firebaseSignOut, signInWithGoogle, onAuthChange } from '../lib/auth'
+import { fetchProfile } from '../lib/firestore'
+import type { Profile, UserRole } from '../types'
 
 interface AuthState {
   user: User | null
+  profile: Profile | null
   isLoading: boolean
   isAuthenticated: boolean
-  userRole: 'user' | 'company_rep' | 'admin' | null
+  userRole: UserRole | null
   
   // Actions
   setUser: (user: User | null) => void
+  setProfile: (profile: Profile | null) => void
   setLoading: (loading: boolean) => void
-  checkAuth: () => Promise<boolean>
+  initialize: () => Promise<void>
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>
-  signUp: (email: string, password: string, userData: any) => Promise<{ success: boolean; error?: string }>
+  signUp: (email: string, password: string, userData: { fullName: string; role?: UserRole; companyId?: string }) => Promise<{ success: boolean; error?: string }>
+  signInWithGoogle: () => Promise<{ success: boolean; error?: string }>
   signOut: () => Promise<void>
-  updateProfile: (data: any) => Promise<{ success: boolean; error?: string }>
+  updateProfile: (data: Partial<Profile>) => Promise<{ success: boolean; error?: string }>
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
+  profile: null,
   isLoading: true,
   isAuthenticated: false,
   userRole: null,
 
   setUser: (user) => {
-    const role = user?.user_metadata?.role || 'user'
+    const role = user?.displayName as UserRole || 'user'
     set({ 
       user, 
       isAuthenticated: !!user,
-      userRole: role as any
+      userRole: role
+    })
+  },
+
+  setProfile: (profile) => {
+    set({ 
+      profile,
+      userRole: profile?.role || null 
     })
   },
 
   setLoading: (loading) => set({ isLoading: loading }),
 
-  checkAuth: async () => {
+  initialize: async () => {
     try {
-      // Supabase 연결 시도 (타임아웃 설정)
-      const timeoutPromise = new Promise<{user: null, error: Error}>((_, reject) => 
-        setTimeout(() => reject(new Error('인증 확인 타임아웃')), 3000)
-      );
+      set({ isLoading: true })
       
-      const authPromise = getCurrentUser();
-      
-      // 타임아웃과 인증 확인 경쟁
-      const { user, error } = await Promise.race([authPromise, timeoutPromise]) as any;
-      
-      if (user && !error) {
-        const role = user.user_metadata?.role || 'user'
-        set({ 
-          user, 
-          isAuthenticated: true, 
-          userRole: role as any,
-          isLoading: false 
-        });
-        return true;
-      } else {
-        throw new Error('사용자 정보를 가져올 수 없습니다.');
-      }
-    } catch (error) {
-      console.log('인증 확인 중 오류, 샘플 사용자로 로그인합니다:', error);
-      // 오류 발생 시에는 샘플 사용자로 로그인
-      const sampleUser = {
-        id: 'sample-user-id',
-        email: 'user@example.com',
-        user_metadata: {
-          role: 'user',
-          fullName: '샘플 사용자',
-          avatar_url: 'https://i.pravatar.cc/150?u=sample-user-id'
+      // Firebase Auth 상태 변경 감지
+      onAuthChange(async (user) => {
+        if (user) {
+          set({ user, isAuthenticated: true, isLoading: false })
+          
+          // Firestore에서 프로필 가져오기
+          const profile = await fetchProfile(user.uid)
+          set({ profile, userRole: profile?.role || 'user' })
+        } else {
+          set({ 
+            user: null, 
+            profile: null,
+            isAuthenticated: false, 
+            userRole: null,
+            isLoading: false 
+          })
         }
-      } as any;
-      
-      set({ 
-        user: sampleUser, 
-        isAuthenticated: true, 
-        userRole: 'user',
-        isLoading: false 
-      });
-      return false;
+      })
+    } catch (error) {
+      console.error('Auth initialization error:', error)
+      set({ isLoading: false })
     }
   },
 
   signIn: async (email: string, password: string) => {
     try {
       set({ isLoading: true })
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+      const { user, error } = await signIn(email, password)
 
-      if (error) throw error
+      if (error) throw new Error(error)
 
-      const role = data.user?.user_metadata?.role || 'user'
-      set({ 
-        user: data.user, 
-        isAuthenticated: true, 
-        userRole: role as any,
-        isLoading: false 
-      })
+      if (user) {
+        const profile = await fetchProfile(user.uid)
+        set({ 
+          user, 
+          profile,
+          isAuthenticated: true, 
+          userRole: profile?.role || 'user',
+          isLoading: false 
+        })
+        return { success: true }
+      }
       
-      return { success: true }
+      return { success: false, error: '로그인에 실패했습니다.' }
     } catch (error: any) {
-      console.error('로그인 오류:', error)
+      console.error('Login error:', error)
       set({ isLoading: false })
       return { 
         success: false, 
@@ -111,47 +106,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
-  signUp: async (email: string, password: string, userData: any) => {
+  signUp: async (email: string, password: string, userData: { fullName: string; role?: UserRole; companyId?: string }) => {
     try {
       set({ isLoading: true })
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            ...userData,
-            role: userData.role || 'user',
-            created_at: new Date().toISOString()
-          }
-        }
-      })
+      const { user, error } = await signUp(email, password, userData)
 
-      if (error) throw error
+      if (error) throw new Error(error)
 
-      // 프로필 테이블에 사용자 정보 저장
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: data.user.id,
-              email: data.user.email,
-              full_name: userData.fullName,
-              role: userData.role || 'user',
-              company_id: userData.companyId || null,
-              created_at: new Date().toISOString()
-            }
-          ])
-
-        if (profileError) {
-          console.error('프로필 생성 오류:', profileError)
-        }
+      if (user) {
+        const profile = await fetchProfile(user.uid)
+        set({ 
+          user, 
+          profile,
+          isAuthenticated: true, 
+          userRole: userData.role || 'user',
+          isLoading: false 
+        })
+        return { success: true }
       }
-
-      set({ isLoading: false })
-      return { success: true }
+      
+      return { success: false, error: '회원가입에 실패했습니다.' }
     } catch (error: any) {
-      console.error('회원가입 오류:', error)
+      console.error('Signup error:', error)
       set({ isLoading: false })
       return { 
         success: false, 
@@ -160,50 +136,70 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
   },
 
+  signInWithGoogle: async () => {
+    try {
+      set({ isLoading: true })
+      const { user, error } = await signInWithGoogle()
+
+      if (error) throw new Error(error)
+
+      if (user) {
+        const profile = await fetchProfile(user.uid)
+        set({ 
+          user, 
+          profile,
+          isAuthenticated: true, 
+          userRole: profile?.role || 'user',
+          isLoading: false 
+        })
+        return { success: true }
+      }
+      
+      return { success: false, error: 'Google 로그인에 실패했습니다.' }
+    } catch (error: any) {
+      console.error('Google signin error:', error)
+      set({ isLoading: false })
+      return { 
+        success: false, 
+        error: error.message || 'Google 로그인 중 오류가 발생했습니다.' 
+      }
+    }
+  },
+
   signOut: async () => {
     try {
       set({ isLoading: true })
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
+      await firebaseSignOut()
       set({ 
         user: null, 
+        profile: null,
         isAuthenticated: false, 
         userRole: null,
         isLoading: false 
       })
     } catch (error) {
-      console.error('로그아웃 오류:', error)
+      console.error('Signout error:', error)
       set({ isLoading: false })
     }
   },
 
-  updateProfile: async (data: any) => {
+  updateProfile: async (data: Partial<Profile>) => {
     try {
-      const { user } = get()
-      if (!user) throw new Error('사용자가 로그인되어 있지 않습니다.')
+      const { user, profile } = get()
+      if (!user) return { success: false, error: '로그인되어 있지 않습니다.' }
 
-      const { error } = await supabase.auth.updateUser({
-        data: { ...user.user_metadata, ...data }
-      })
+      // Firestore 프로필 업데이트
+      const { updateProfile: updateFirestoreProfile } = await import('../lib/firestore')
+      const success = await updateFirestoreProfile(user.uid, data)
 
-      if (error) throw error
-
-      // 프로필 테이블도 업데이트
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update(data)
-        .eq('id', user.id)
-
-      if (profileError) throw profileError
-
-      // 로컬 상태 업데이트
-      const updatedUser = { ...user, user_metadata: { ...user.user_metadata, ...data } }
-      set({ user: updatedUser })
-
-      return { success: true }
+      if (success) {
+        set({ profile: { ...profile, ...data } as Profile })
+        return { success: true }
+      }
+      
+      return { success: false, error: '프로필 업데이트에 실패했습니다.' }
     } catch (error: any) {
-      console.error('프로필 업데이트 오류:', error)
+      console.error('Profile update error:', error)
       return { 
         success: false, 
         error: error.message || '프로필 업데이트 중 오류가 발생했습니다.' 
@@ -212,27 +208,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   }
 }))
 
-// 인증 상태 초기화 - Promise 반환
+// 인증 상태 초기화
 export const initializeAuth = (): Promise<void> => {
-  return new Promise(async (resolve) => {
-    try {
-      const store = useAuthStore.getState()
-      await store.checkAuth()
-      
-      // 세션 변경 감지 - unsubscribe 함수 저장
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          store.setUser(session?.user || null)
-        } else if (event === 'SIGNED_OUT') {
-          store.setUser(null)
-        }
-      })
-      
-      // 구독 해제를 위한cleanup 함수 (필요시 사용)
-      ;(window as any).__authSubscription = subscription
-    } catch (error) {
-      console.log('인증 초기화 오류, 샘플 모드로 진행:', error)
-    }
-    resolve()
+  return new Promise((resolve) => {
+    const store = useAuthStore.getState()
+    store.initialize().then(() => resolve())
   })
 }

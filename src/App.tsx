@@ -1,7 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { initializeAuth } from './store/authStore'
-import { initializeData } from './store/dataStore'
 import Layout from './components/Layout'
 import DashboardPage from './pages/DashboardPage'
 import CompaniesPage from './pages/CompaniesPage'
@@ -17,33 +15,26 @@ function App() {
   const [initialized, setInitialized] = useState(false)
 
   useEffect(() => {
-    const safeInitialize = async () => {
+    // Firebase 초기화
+    const init = async () => {
       try {
-        await Promise.race([
-          initializeAuth(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('인증 초기화 타임아웃')), 3000)
-          )
-        ])
+        const { initializeAuth } = await import('./store/authStore')
+        await initializeAuth()
       } catch (error) {
-        console.log('인증 초기화 실패, 샘플 모드로 계속 진행:', error)
+        console.log('인증 초기화 실패:', error)
       }
 
       try {
-        await Promise.race([
-          Promise.resolve(initializeData()),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('데이터 초기화 타임아웃')), 2000)
-          )
-        ])
+        const { initializeData } = await import('./store/dataStore')
+        await initializeData()
       } catch (error) {
-        console.log('데이터 초기화 실패, 샘플 데이터로 계속 진행:', error)
+        console.log('데이터 초기화 실패:', error)
       }
 
       setInitialized(true)
     }
 
-    safeInitialize()
+    init()
   }, [])
 
   if (!initialized) {

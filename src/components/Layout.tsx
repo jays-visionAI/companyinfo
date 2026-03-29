@@ -138,7 +138,7 @@ const Layout: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">
-                  {user?.user_metadata?.fullName || user?.email?.split('@')[0] || '사용자'}
+                  {user?.displayName || user?.email?.split('@')[0] || '사용자'}
                 </p>
                 <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-medium ${roleInfo.color}`}>
                   {roleInfo.label}
